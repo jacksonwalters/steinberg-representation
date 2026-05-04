@@ -3,6 +3,8 @@
 This folder contains a small SageMath computation of the Steinberg
 representation of the finite general linear group `GL_3(F_2)`.
 
+This corresponds to the expository paper: [https://jacksonwalters.com/docs/notes/steinberg_representation_GL(3,2).pdf](https://jacksonwalters.com/docs/notes/steinberg_representation_GL(3,2).pdf)
+
 The representation is realized geometrically from the spherical building of
 `F_2^3`. In this rank-2 case, the building is the incidence graph whose
 vertices are:
