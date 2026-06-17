@@ -1,8 +1,10 @@
-# Steinberg Representations of `GL_3(F_q)`
+# Representations of finite general linear groups
 
-This folder contains small SageMath computations of the Steinberg
-representations of finite general linear groups `GL_3(F_q)`, with concrete
-scripts for `q = 2, 3` and a parameterized script for general prime powers `q`.
+This repository contains small SageMath computations of representations of
+finite general linear groups. The original focus is the Steinberg
+representation of `GL_3(F_q)`, with concrete scripts for `q = 2, 3` and a
+parameterized script for general prime powers `q`. It also includes
+projective-line and representation-family scripts for `GL_2(F_q)`.
 
 The original `GL_3(F_2)` computation corresponds to the expository paper:
 [https://jacksonwalters.com/docs/notes/steinberg_representation_GL(3,2).pdf](https://jacksonwalters.com/docs/notes/steinberg_representation_GL(3,2).pdf)
@@ -27,16 +29,25 @@ general this rank-2 construction gives `dim St = q^3`.
 
 ## Files
 
-- `steinberg_representation_gl_3_2.py` is the original `GL_3(F_2)` SageMath
-  script, now with concise default output.
-- `steinberg_representation_gl_3_3.py` is the `GL_3(F_3)` SageMath script.
-- `steinberg_representation_gl_3_q.py` is the general `GL_3(F_q)` script. It
-  accepts `q` as a command-line argument and keeps larger computations opt-in or
-  automatic only for small enough inputs.
-- `fano_plane_representations_gl_3_2.py` specializes to `GL_3(F_2)` as the
-  automorphism group of the Fano plane. It constructs the point, line, flag,
+- `gl_3_q/steinberg_representation_gl_3_2.py` is the original `GL_3(F_2)`
+  SageMath script, now with concise default output.
+- `gl_3_q/steinberg_representation_gl_3_3.py` is the `GL_3(F_3)` SageMath
+  script.
+- `gl_3_q/steinberg_representation_gl_3_q.py` is the general `GL_3(F_q)`
+  script. It accepts `q` as a command-line argument and keeps larger
+  computations opt-in or automatic only for small enough inputs.
+- `gl_3_q/fano_plane_representations_gl_3_2.py` specializes to `GL_3(F_2)` as
+  the automorphism group of the Fano plane. It constructs the point, line, flag,
   reduced point/line, boundary-image, and Steinberg representations as explicit
   matrices.
+- `gl_2_q/projective_line.py` contains reusable `P^1(F_q)` geometry and
+  projective-line action helpers for `GL_2(F_q)`.
+- `gl_2_q/steinberg_representation_gl_2_q.py` constructs the `GL_2(F_q)`
+  Steinberg representation as reduced `H_0(P^1(F_q))`.
+- `gl_2_q/representations_gl_2_q.py` organizes the standard complex
+  representation families of `GL_2(F_q)`, constructs determinant twists of
+  Steinberg, and constructs principal series by explicit induction from the
+  Borel subgroup.
 
 ## What the scripts do
 
@@ -65,29 +76,65 @@ chi_St(g) = # fixed edges - # fixed vertices + 1.
 Install SageMath (tested with SageMath 10.8), then run from this directory:
 
 ```bash
-sage steinberg_representation_gl_3_2.py
-sage steinberg_representation_gl_3_3.py
-sage steinberg_representation_gl_3_q.py 3
-sage fano_plane_representations_gl_3_2.py
+sage gl_3_q/steinberg_representation_gl_3_2.py
+sage gl_3_q/steinberg_representation_gl_3_3.py
+sage gl_3_q/steinberg_representation_gl_3_q.py 3
+sage gl_3_q/fano_plane_representations_gl_3_2.py
+sage gl_2_q/steinberg_representation_gl_2_q.py 5
+sage gl_2_q/representations_gl_2_q.py 5
 ```
 
 For another prime power, pass `q`:
 
 ```bash
-sage steinberg_representation_gl_3_q.py 5
+sage gl_3_q/steinberg_representation_gl_3_q.py 5
 ```
 
 The general script suppresses bulky data by default. Useful options are:
 
 ```bash
-sage steinberg_representation_gl_3_q.py 3 --character-table
-sage steinberg_representation_gl_3_q.py 7 --apartment-span yes
-sage steinberg_representation_gl_3_q.py 7 --character yes
-sage steinberg_representation_gl_3_q.py 3 --weyl-orbits
-sage fano_plane_representations_gl_3_2.py --character-table
-sage fano_plane_representations_gl_3_2.py --incidence
-sage fano_plane_representations_gl_3_2.py --generators
+sage gl_3_q/steinberg_representation_gl_3_q.py 3 --character-table
+sage gl_3_q/steinberg_representation_gl_3_q.py 7 --apartment-span yes
+sage gl_3_q/steinberg_representation_gl_3_q.py 7 --character yes
+sage gl_3_q/steinberg_representation_gl_3_q.py 3 --weyl-orbits
+sage gl_3_q/fano_plane_representations_gl_3_2.py --character-table
+sage gl_3_q/fano_plane_representations_gl_3_2.py --incidence
+sage gl_3_q/fano_plane_representations_gl_3_2.py --generators
+sage gl_2_q/steinberg_representation_gl_2_q.py 5 --character-table
+sage gl_2_q/representations_gl_2_q.py 5 --all-principal-series
+sage gl_2_q/representations_gl_2_q.py 4 --cuspidal-parameters
 ```
+
+## `GL_2(F_q)` scripts
+
+For `GL_2(F_q)`, the spherical building is the projective line
+`P^1(F_q)`. The Steinberg representation is the reduced zero-th homology:
+
+```text
+St = \widetilde H_0(P^1(F_q); C) = ker(sum: C[P^1(F_q)] -> C).
+```
+
+Since `#P^1(F_q) = q + 1`, this gives `dim St = q`, and the projective-line
+permutation module decomposes as
+
+```text
+C[P^1(F_q)] = 1 + St.
+```
+
+The broader `GL_2(F_q)` representation script records the standard complex
+irreducible families:
+
+- determinant characters, dimension `1`;
+- determinant twists of Steinberg, dimension `q`;
+- principal series `Ind_B^G(chi_1 tensor chi_2)` with `chi_1 != chi_2`,
+  dimension `q + 1`;
+- cuspidal series from nonsplit-torus character orbits, dimension `q - 1`.
+
+The script checks the family count by verifying that the sum of squares of the
+listed dimensions is `|GL_2(F_q)|`. It constructs the projective-line module,
+Steinberg twists, and principal series explicitly. Cuspidals are counted and
+their parameter orbits can be printed, but their matrix construction is left as
+a separate, subtler nonsplit-torus construction.
 
 ## Fano-plane representations for `GL_3(F_2)`
 
@@ -160,6 +207,19 @@ For the Fano-plane representation script:
 - flag permutation character splits as `1 + 2*chi_6 + St`;
 - character inner products satisfy
   `<chi_6, chi_6> = 1`, `<St, St> = 1`, and `<chi_6, St> = 0`.
+
+For `GL_2(F_5)`:
+
+- group order: `480`;
+- projective-line size: `6`;
+- `dim St = 5`;
+- `C[P^1] = 1 + St`;
+- character inner product `<St, St> = 1`;
+- representation-family counts:
+  `4` determinant characters, `4` Steinberg twists, `6` principal series,
+  and `10` cuspidal representations;
+- sum of squares of listed dimensions: `480`;
+- each constructed principal series has character inner product `1`.
 
 For `GL_3(F_3)`:
 
