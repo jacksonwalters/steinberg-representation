@@ -242,6 +242,58 @@ def character_rows(data):
     return rows
 
 
+def three_dimensional_character_data():
+    K = CyclotomicField(7)
+    zeta = K.gen()
+    alpha = zeta + zeta**2 + zeta**4
+    alpha_conjugate = zeta**3 + zeta**5 + zeta**6
+
+    assert alpha + alpha_conjugate == -1
+    assert alpha * alpha_conjugate == 2
+
+    return {
+        "K": K,
+        "zeta": zeta,
+        "alpha": alpha,
+        "alpha_conjugate": alpha_conjugate,
+    }
+
+
+def add_three_dimensional_characters(rows):
+    data = three_dimensional_character_data()
+    K = data["K"]
+    alpha = data["alpha"]
+    alpha_conjugate = data["alpha_conjugate"]
+
+    order_7_rows = [row for row in rows if row["order"] == 7]
+    assert len(order_7_rows) == 2
+
+    for row in rows:
+        if row["order"] == 1:
+            chi_3 = K(3)
+        elif row["order"] == 2:
+            chi_3 = K(-1)
+        elif row["order"] == 3:
+            chi_3 = K(0)
+        elif row["order"] == 4:
+            chi_3 = K(1)
+        elif row is order_7_rows[0]:
+            chi_3 = alpha
+        elif row is order_7_rows[1]:
+            chi_3 = alpha_conjugate
+        else:
+            raise ValueError(f"unexpected conjugacy class order {row['order']}")
+
+        row["three_dimensional"] = chi_3
+        row["three_dimensional_conjugate"] = chi_3.conjugate()
+
+    return data
+
+
+def conjugate_value(x):
+    return x.conjugate() if hasattr(x, "conjugate") else x
+
+
 def inner_product(rows, left_key, right_key):
     group_order = sum(ZZ(row["size"]) for row in rows)
     return (
@@ -251,6 +303,74 @@ def inner_product(rows, left_key, right_key):
         )
         / group_order
     )
+
+
+def hermitian_inner_product(rows, left_key, right_key):
+    group_order = sum(ZZ(row["size"]) for row in rows)
+    return (
+        sum(
+            ZZ(row["size"]) * row[left_key] * conjugate_value(row[right_key])
+            for row in rows
+        )
+        / group_order
+    )
+
+
+def character_value_on_square(row, rows, key):
+    if row["order"] == 1:
+        return next(r[key] for r in rows if r["order"] == 1)
+    if row["order"] == 2:
+        return next(r[key] for r in rows if r["order"] == 1)
+    if row["order"] == 3:
+        return next(r[key] for r in rows if r["order"] == 3)
+    if row["order"] == 4:
+        return next(r[key] for r in rows if r["order"] == 2)
+    if row["order"] == 7:
+        return row[key]
+
+    raise ValueError(f"unexpected conjugacy class order {row['order']}")
+
+
+def symmetric_square_character_value(row, rows, key):
+    return (row[key] ** 2 + character_value_on_square(row, rows, key)) / 2
+
+
+def verify_three_dimensional_characters(rows):
+    assert hermitian_inner_product(rows, "three_dimensional", "three_dimensional") == 1
+    assert (
+        hermitian_inner_product(
+            rows,
+            "three_dimensional_conjugate",
+            "three_dimensional_conjugate",
+        )
+        == 1
+    )
+    assert (
+        hermitian_inner_product(
+            rows,
+            "three_dimensional",
+            "three_dimensional_conjugate",
+        )
+        == 0
+    )
+
+    for row in rows:
+        assert (
+            symmetric_square_character_value(row, rows, "three_dimensional")
+            == row["point_augmentation"]
+        )
+        assert (
+            symmetric_square_character_value(
+                row,
+                rows,
+                "three_dimensional_conjugate",
+            )
+            == row["point_augmentation"]
+        )
+        assert (
+            row["three_dimensional"] * row["three_dimensional_conjugate"]
+            == 1 + row["steinberg"]
+        )
 
 
 def verify_action_property(data, representation):
@@ -305,6 +425,7 @@ def verify_representations(data, rows):
     assert inner_product(rows, "steinberg", "steinberg") == 1
     assert inner_product(rows, "point_augmentation", "steinberg") == 0
     assert inner_product(rows, "flags", "flags") == 6
+    verify_three_dimensional_characters(rows)
 
 
 def print_incidence(data):
@@ -314,18 +435,30 @@ def print_incidence(data):
 
 
 def print_character_table(rows):
+    character_data = three_dimensional_character_data()
+
     print("Characters by conjugacy class:")
     print(
         "  "
         "ord size | fix_pts fix_lines fix_flags | "
-        "chi_6 chi_St chi_flags"
+        "chi_3 chi_3bar chi_6 chi_St chi_flags"
     )
     for row in rows:
         print(
             f"  {row['order']:3} {row['size']:4} | "
             f"{row['fixed_points']:7} {row['fixed_lines']:9} {row['fixed_flags']:9} | "
+            f"{character_value_repr(row['three_dimensional'], character_data):>8} "
+            f"{character_value_repr(row['three_dimensional_conjugate'], character_data):>8} "
             f"{row['point_augmentation']:5} {row['steinberg']:6} {row['flags']:9}"
         )
+
+
+def character_value_repr(value, character_data):
+    if value == character_data["alpha"]:
+        return "alpha"
+    if value == character_data["alpha_conjugate"]:
+        return "alpha_bar"
+    return str(value)
 
 
 def print_generator_matrices(data):
@@ -348,6 +481,7 @@ def main():
     args = parse_args()
     data = build_fano_data()
     rows = character_rows(data)
+    three_dimensional_data = add_three_dimensional_characters(rows)
     verify_representations(data, rows)
 
     boundary = data["boundary"]
@@ -368,10 +502,26 @@ def main():
     print("flag permutation module:  dim 21 = im(partial) dim 13 + Steinberg dim 8")
     print("character decomposition check: C[flags] = 1 + 2*chi_6 + St")
     print(
+        "three-dimensional characters: "
+        "chi_3 and chi_3bar over Q(zeta_7), "
+        "with order-7 values alpha and alpha_bar"
+    )
+    print(
+        "three-dimensional identities: "
+        "Sym^2(chi_3)=chi_6 and chi_3*chi_3bar=1+St"
+    )
+    print(
         "inner products: "
         f"<chi_6, chi_6>={inner_product(rows, 'point_augmentation', 'point_augmentation')}, "
         f"<St, St>={inner_product(rows, 'steinberg', 'steinberg')}, "
-        f"<chi_6, St>={inner_product(rows, 'point_augmentation', 'steinberg')}"
+        f"<chi_6, St>={inner_product(rows, 'point_augmentation', 'steinberg')}, "
+        f"<chi_3, chi_3>={hermitian_inner_product(rows, 'three_dimensional', 'three_dimensional')}, "
+        f"<chi_3, chi_3bar>={hermitian_inner_product(rows, 'three_dimensional', 'three_dimensional_conjugate')}"
+    )
+    print(
+        "where "
+        f"alpha = {three_dimensional_data['alpha']} "
+        "and alpha_bar is its complex conjugate"
     )
 
     if args.incidence:

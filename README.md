@@ -39,7 +39,8 @@ general this rank-2 construction gives `dim St = q^3`.
 - `gl_3_q/fano_plane_representations_gl_3_2.py` specializes to `GL_3(F_2)` as
   the automorphism group of the Fano plane. It constructs the point, line, flag,
   reduced point/line, boundary-image, and Steinberg representations as explicit
-  matrices.
+  matrices, and records the two complex 3-dimensional irreducible characters
+  over `Q(zeta_7)`.
 - `gl_2_q/projective_line.py` contains reusable `P^1(F_q)` geometry and
   projective-line action helpers for `GL_2(F_q)`.
 - `gl_2_q/steinberg_representation_gl_2_q.py` constructs the `GL_2(F_q)`
@@ -198,7 +199,20 @@ C[flags] = 1 + 2*chi_6 + St.
 ```
 
 The script checks these decompositions using character inner products over the
-six conjugacy classes of `GL_3(F_2)`.
+six conjugacy classes of `GL_3(F_2)`. It also adds the two conjugate
+3-dimensional characters with order-7 values
+
+```text
+alpha = zeta_7 + zeta_7^2 + zeta_7^4,
+alpha_bar = zeta_7^3 + zeta_7^5 + zeta_7^6,
+```
+
+and verifies the character identities
+
+```text
+Sym^2(chi_3) = chi_6,
+chi_3 * chi_3bar = 1 + St.
+```
 
 ## Expected output
 
@@ -231,7 +245,10 @@ For the Fano-plane representation script:
 - point and line permutation modules split as `1 + chi_6`;
 - flag permutation character splits as `1 + 2*chi_6 + St`;
 - character inner products satisfy
-  `<chi_6, chi_6> = 1`, `<St, St> = 1`, and `<chi_6, St> = 0`.
+  `<chi_6, chi_6> = 1`, `<St, St> = 1`, and `<chi_6, St> = 0`;
+- the two 3-dimensional characters satisfy
+  `<chi_3, chi_3> = 1`, `<chi_3, chi_3bar> = 0`,
+  `Sym^2(chi_3) = chi_6`, and `chi_3*chi_3bar = 1 + St`.
 
 For `GL_2(F_5)`:
 
