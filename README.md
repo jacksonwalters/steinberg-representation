@@ -33,6 +33,10 @@ general this rank-2 construction gives `dim St = q^3`.
 - `steinberg_representation_gl_3_q.py` is the general `GL_3(F_q)` script. It
   accepts `q` as a command-line argument and keeps larger computations opt-in or
   automatic only for small enough inputs.
+- `fano_plane_representations_gl_3_2.py` specializes to `GL_3(F_2)` as the
+  automorphism group of the Fano plane. It constructs the point, line, flag,
+  reduced point/line, boundary-image, and Steinberg representations as explicit
+  matrices.
 
 ## What the scripts do
 
@@ -64,6 +68,7 @@ Install SageMath (tested with SageMath 10.8), then run from this directory:
 sage steinberg_representation_gl_3_2.py
 sage steinberg_representation_gl_3_3.py
 sage steinberg_representation_gl_3_q.py 3
+sage fano_plane_representations_gl_3_2.py
 ```
 
 For another prime power, pass `q`:
@@ -79,7 +84,49 @@ sage steinberg_representation_gl_3_q.py 3 --character-table
 sage steinberg_representation_gl_3_q.py 7 --apartment-span yes
 sage steinberg_representation_gl_3_q.py 7 --character yes
 sage steinberg_representation_gl_3_q.py 3 --weyl-orbits
+sage fano_plane_representations_gl_3_2.py --character-table
+sage fano_plane_representations_gl_3_2.py --incidence
+sage fano_plane_representations_gl_3_2.py --generators
 ```
+
+## Fano-plane representations for `GL_3(F_2)`
+
+Since `F_2^*` is trivial, `GL_3(F_2) = PGL_3(F_2)` acts faithfully on the Fano
+plane. The Fano-plane script builds this action on:
+
+- the 7 projective points;
+- the 7 projective lines;
+- the 21 incident point-line flags.
+
+It then forms the same building boundary map used in the Steinberg scripts,
+
+```text
+partial: C[flags] -> C[points] + C[lines],
+```
+
+and verifies the equivariant decomposition
+
+```text
+C[flags] = im(partial) + St,
+dim C[flags] = 21 = 13 + 8.
+```
+
+The point and line permutation representations each split as
+
+```text
+C[points] = 1 + chi_6,
+C[lines]  = 1 + chi_6,
+```
+
+where `chi_6` is the irreducible 6-dimensional augmentation representation. The
+flag representation has character decomposition
+
+```text
+C[flags] = 1 + 2*chi_6 + St.
+```
+
+The script checks these decompositions using character inner products over the
+six conjugacy classes of `GL_3(F_2)`.
 
 ## Expected output
 
@@ -101,6 +148,18 @@ For `GL_3(F_2)`:
 - Steinberg character values by class order/size:
   `8, 0, -1, 0, 1, 1`;
 - inner product of the Steinberg character with itself: `1`.
+
+For the Fano-plane representation script:
+
+- group order: `168`;
+- Fano-plane counts: `7` points, `7` lines, `21` flags;
+- building boundary rank: `13`;
+- `dim St = 8`;
+- `dim im(partial) = 13`;
+- point and line permutation modules split as `1 + chi_6`;
+- flag permutation character splits as `1 + 2*chi_6 + St`;
+- character inner products satisfy
+  `<chi_6, chi_6> = 1`, `<St, St> = 1`, and `<chi_6, St> = 0`.
 
 For `GL_3(F_3)`:
 
