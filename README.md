@@ -103,6 +103,8 @@ sage gl_3_q/fano_plane_representations_gl_3_2.py --generators
 sage gl_2_q/steinberg_representation_gl_2_q.py 5 --character-table
 sage gl_2_q/representations_gl_2_q.py 5 --all-principal-series
 sage gl_2_q/representations_gl_2_q.py 4 --cuspidal-parameters
+sage gl_2_q/representations_gl_2_q.py 5 --cuspidal 1
+sage gl_2_q/representations_gl_2_q.py 3 --all-cuspidals
 ```
 
 ## `GL_2(F_q)` scripts
@@ -132,9 +134,32 @@ irreducible families:
 
 The script checks the family count by verifying that the sum of squares of the
 listed dimensions is `|GL_2(F_q)|`. It constructs the projective-line module,
-Steinberg twists, and principal series explicitly. Cuspidals are counted and
-their parameter orbits can be printed, but their matrix construction is left as
-a separate, subtler nonsplit-torus construction.
+Steinberg twists, and principal series explicitly.
+
+Cuspidal representations are constructed by a Gelfand-Graev projector. For a
+regular character `theta` of the nonsplit torus
+
+```text
+T = F_{q^2}^*,
+```
+
+the script forms
+
+```text
+Gamma = Ind_U^G(psi),
+```
+
+where `U = {[[1, x], [0, 1]] : x in F_q}` and `psi` is a nontrivial additive
+character of `F_q`. It then applies the central idempotent
+
+```text
+e_theta = (dim pi_theta / |G|) sum_g chi_theta(g^{-1}) Gamma(g).
+```
+
+The image of `e_theta` has dimension `q - 1`; restricting `Gamma(g)` to this
+image gives explicit cuspidal matrices. This exact projector method is useful
+for small `q`, but it uses a Gelfand-Graev space of dimension `|GL_2(F_q)|/q`,
+so larger values of `q` become slower than the principal-series construction.
 
 ## Fano-plane representations for `GL_3(F_2)`
 
@@ -219,7 +244,10 @@ For `GL_2(F_5)`:
   `4` determinant characters, `4` Steinberg twists, `6` principal series,
   and `10` cuspidal representations;
 - sum of squares of listed dimensions: `480`;
-- each constructed principal series has character inner product `1`.
+- each constructed principal series has character inner product `1`;
+- `--cuspidal 1` builds a 96-dimensional Gelfand-Graev representation,
+  projects to rank `4`, and verifies the resulting cuspidal character has
+  inner product `1`.
 
 For `GL_3(F_3)`:
 
