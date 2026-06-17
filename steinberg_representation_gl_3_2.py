@@ -1,16 +1,20 @@
 from sage.all import *
 
+VERBOSE = False
+
 F = GF(2)
 V = VectorSpace(F, 3)
 G = GL(3, GF(2))
 
+print("Computing the Steinberg representation of GL_3(F_2)")
+
 # list all 1-dimensional
 points = [U for U in V.subspaces(1)]
-print("len(points):", len(points))
+print("number of points:", len(points))
 
 # list 2-dimensional subspaces
 planes = [U for U in V.subspaces(2)]
-print("len(planes):", len(planes))
+print("number of planes:", len(planes))
 
 # create edges between points and planes
 edges = []
@@ -18,7 +22,7 @@ for p in points:
     for H in planes:
         if p.is_subspace(H):
             edges.append((p, H))
-len(edges)
+print("number of incidence edges:", len(edges))
 
 # create index mappings
 point_index = {points[i]: i for i in range(len(points))}
@@ -28,7 +32,7 @@ edge_index = {edges[i]: i for i in range(len(edges))}
 # initialize boundary matrix
 num_vertices = len(points) + len(planes)
 num_edges = len(edges)
-boundary = Matrix(CDF, num_vertices, num_edges)
+boundary = Matrix(QQ, num_vertices, num_edges)
 
 # fill boundary matrix
 for (p, H), j in edge_index.items():
@@ -40,13 +44,17 @@ for (p, H), j in edge_index.items():
 
 # compute kernel of boundary matrix
 ker = boundary.right_kernel()
-ker.dimension()
+print("boundary rank:", boundary.rank())
+print("dimension of ker(partial):", ker.dimension())
+assert ker.dimension() == 8
 
-print("kernel of boundary matrix:", ker)
+if VERBOSE:
+    print("kernel of boundary matrix:", ker)
 
 # display a basis vector of the Steinberg representation
 steinberg_basis = ker.basis()
-print("element of Stenberg basis: ", steinberg_basis[0])
+if VERBOSE:
+    print("element of Steinberg basis:", steinberg_basis[0])
 
 def line_repr(L):
     """
@@ -88,8 +96,9 @@ def pretty_print_cycle(v, edges):
         if coeff != 0:
             print(f"{coeff:+} · [{edge_repr(edges[j])}]")
 
-print("Pretty print of Steinberg basis element:")
-pretty_print_cycle(steinberg_basis[0],edges)
+if VERBOSE:
+    print("Pretty print of Steinberg basis element:")
+    pretty_print_cycle(steinberg_basis[0],edges)
 
 from itertools import permutations
 
@@ -99,7 +108,7 @@ def apartment_cycle_from_g(g, edges, edge_index):
     basis = [g.matrix().column(i) for i in range(3)]
     lines = [V.subspace([v]) for v in basis]
 
-    cycle = vector(CDF, len(edges))
+    cycle = vector(QQ, len(edges))
 
     for w in permutations([0, 1, 2]):
         sign = Permutation([i+1 for i in w]).signature()
@@ -113,13 +122,15 @@ def apartment_cycle_from_g(g, edges, edge_index):
 g = G.random_element()
 
 v_A = apartment_cycle_from_g(g, edges, edge_index)
-print("apartment cycle v_A from random basis element g \in GL_3(F_2):", v_A)
 
 #verify this is actually a cycle by multiplying by boundary map
-print("\del * v_A", (boundary * v_A).is_zero())
+print("random apartment cycle is in ker(partial):", (boundary * v_A).is_zero())
+assert (boundary * v_A).is_zero()
 
-print("Pretty print of apartment cycle v_A:")
-pretty_print_cycle(v_A,edges)
+if VERBOSE:
+    print("apartment cycle v_A from random basis element g in GL_3(F_2):", v_A)
+    print("Pretty print of apartment cycle v_A:")
+    pretty_print_cycle(v_A,edges)
 
 ###### DEFINE G-ACTION ON STEINBERG REPRESENTATION #######
 
@@ -149,7 +160,7 @@ def g_action_on_edge_indices(g, edges, edge_index):
 def g_action_on_vector(g, v, edges, edge_index):
     perm_map = g_action_on_edge_indices(g, edges, edge_index)
     # create a zero vector of same dimension
-    v_new = vector(CDF, len(v))
+    v_new = vector(QQ, len(v))
     for i, val in enumerate(v):
         if val != 0:
             j = perm_map[i]
@@ -159,8 +170,9 @@ def g_action_on_vector(g, v, edges, edge_index):
 v0 = steinberg_basis[0]
 g_v0 = g_action_on_vector(g, v0, edges, edge_index); 
 
-print("Steinberg basis element: ",v0)
-print("g · Steinberg basis element: ",g_v0)
+if VERBOSE:
+    print("Steinberg basis element:", v0)
+    print("g * Steinberg basis element:", g_v0)
 
 # verify the action is in fact a G-action on H(\Delta; \C), the Steinberg representation
 
@@ -203,7 +215,7 @@ print(f"Weyl group constructed with {len(W)} elements.")
 
 def orbit(apartment, W, edges, edge_index):
     orbit_set = set()
-    v = vector(CDF, apartment)
+    v = vector(QQ, apartment)
     for g in W:
         v_g = g_action_on_vector(g, v, edges, edge_index)
         # Normalize orientation by choosing lex smaller with its negation
@@ -244,17 +256,14 @@ print(f"Dimension of the G-orbit span of v_A is {dim_span}")
 # print kernel
 basis = ker.basis()
 
-# change base ring for kernel to complex double field
-ker_complex = ker.change_ring(CDF)
-
 # get the matrix representation of an element g in the Steinberg representation
 def steinberg_matrix(g, basis):
     cols = []
     for v in basis:
         gv = g_action_on_vector(g, v, edges, edge_index)
-        coords = ker_complex.coordinates(gv)
+        coords = ker.coordinates(gv)
         cols.append(coords)
-    return matrix(CDF, cols).transpose()
+    return matrix(QQ, cols).transpose()
 
 # compute character of representation explicitly
 print("Computing character of Steinberg representation...")
@@ -272,7 +281,7 @@ for C in G.conjugacy_classes():
     rows.append({
         "order": g.order(),
         "size": len(C),
-        "value": int(abs(char[g])),   # cast away .0
+        "value": ZZ(char[g]),
         "rep": g
     })
 
@@ -282,5 +291,6 @@ for r in rows:
     print(f"order {r['order']:2}, size {r['size']:3} : χ = {r['value']}")
 
 # compute inner product of character with itself
-inner = sum(abs(v)**2 for v in char.values()) / G.order()
+inner = sum(ZZ(v) ** 2 for v in char.values()) / ZZ(G.order())
 print("Inner product of character with itself:", inner)
+assert inner == 1

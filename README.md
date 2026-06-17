@@ -1,8 +1,8 @@
-# Steinberg Representations of `GL_3(F_2)` and `GL_3(F_3)`
+# Steinberg Representations of `GL_3(F_q)`
 
 This folder contains small SageMath computations of the Steinberg
-representations of the finite general linear groups `GL_3(F_2)` and
-`GL_3(F_3)`.
+representations of finite general linear groups `GL_3(F_q)`, with concrete
+scripts for `q = 2, 3` and a parameterized script for general prime powers `q`.
 
 The original `GL_3(F_2)` computation corresponds to the expository paper:
 [https://jacksonwalters.com/docs/notes/steinberg_representation_GL(3,2).pdf](https://jacksonwalters.com/docs/notes/steinberg_representation_GL(3,2).pdf)
@@ -22,13 +22,17 @@ St = H_1(Delta; C) = ker(partial: C_1(Delta; C) -> C_0(Delta; C)).
 ```
 
 For `GL_3(F_2)`, the computation finds an 8-dimensional Steinberg module. For
-`GL_3(F_3)`, the same construction gives a 27-dimensional Steinberg module.
+`GL_3(F_3)`, the same construction gives a 27-dimensional Steinberg module. In
+general this rank-2 construction gives `dim St = q^3`.
 
 ## Files
 
 - `steinberg_representation_gl_3_2.py` is the original `GL_3(F_2)` SageMath
-  script.
+  script, now with concise default output.
 - `steinberg_representation_gl_3_3.py` is the `GL_3(F_3)` SageMath script.
+- `steinberg_representation_gl_3_q.py` is the general `GL_3(F_q)` script. It
+  accepts `q` as a command-line argument and keeps larger computations opt-in or
+  automatic only for small enough inputs.
 
 ## What the scripts do
 
@@ -44,9 +48,9 @@ The scripts:
 8. Compute the span of apartment cycles.
 9. Compute or verify the character of the resulting representation.
 
-The `GL_3(F_3)` script computes the Steinberg character from fixed vertex and
-edge counts instead of building a `27 x 27` matrix for every group element. For
-a connected graph,
+The `GL_3(F_3)` and general `GL_3(F_q)` scripts compute the Steinberg character
+from fixed vertex and edge counts instead of building a `q^3 x q^3` matrix for
+every group element. For a connected graph,
 
 ```text
 chi_St(g) = # fixed edges - # fixed vertices + 1.
@@ -59,12 +63,29 @@ Install SageMath (tested with SageMath 10.8), then run from this directory:
 ```bash
 sage steinberg_representation_gl_3_2.py
 sage steinberg_representation_gl_3_3.py
+sage steinberg_representation_gl_3_q.py 3
+```
+
+For another prime power, pass `q`:
+
+```bash
+sage steinberg_representation_gl_3_q.py 5
+```
+
+The general script suppresses bulky data by default. Useful options are:
+
+```bash
+sage steinberg_representation_gl_3_q.py 3 --character-table
+sage steinberg_representation_gl_3_q.py 7 --apartment-span yes
+sage steinberg_representation_gl_3_q.py 7 --character yes
+sage steinberg_representation_gl_3_q.py 3 --weyl-orbits
 ```
 
 ## Expected output
 
-Some printed vectors depend on the random group element selected during the
-`GL_3(F_2)` run, but the structural checks should be stable.
+Default output is concise: it reports counts, dimensions, apartment checks, and
+character irreducibility checks without printing large basis vectors or full
+character tables.
 
 For `GL_3(F_2)`:
 
@@ -77,7 +98,9 @@ For `GL_3(F_2)`:
 - number of Weyl-group orbits on apartments: `7`;
 - orbit sizes: `[3, 6, 1, 6, 6, 3, 3]`;
 - dimension of the `GL_3(F_2)`-orbit span of an apartment cycle: `8`;
-- inner product of the Steinberg character with itself: `1.0`.
+- Steinberg character values by class order/size:
+  `8, 0, -1, 0, 1, 1`;
+- inner product of the Steinberg character with itself: `1`.
 
 For `GL_3(F_3)`:
 
@@ -91,17 +114,27 @@ For `GL_3(F_3)`:
 - rank of the apartment-cycle span: `27`;
 - Weyl group size: `6`;
 - number of Weyl-group orbits on apartments: `49`;
+- number of conjugacy classes: `24`;
 - inner product of the Steinberg character with itself: `1`.
 
 The `GL_3(F_3)` script ran end-to-end in under 20 seconds on the machine used
 to create this repository.
 
+For general `q`, the script checks the formulas:
+
+```text
+# points = # planes = q^2 + q + 1
+# edges = (q + 1)(q^2 + q + 1)
+dim St = #edges - #vertices + 1 = q^3
+# apartments up to orientation = q^3(q + 1)(q^2 + q + 1) / 6
+```
+
 ## Mathematical context
 
 For a finite group of Lie type, the Steinberg representation can be constructed
 from the top reduced homology of the associated spherical building. Here the
-groups are `GL_3(F_q)` for `q = 2, 3`, so the building is one-dimensional, and
-its chambers are flags
+groups are `GL_3(F_q)`, so the building is one-dimensional, and its chambers
+are flags
 
 ```text
 line <= plane <= F_q^3.
@@ -111,6 +144,9 @@ Apartments come from choices of ordered bases of `F_q^3`. Each basis determines
 a hexagonal cycle in the incidence graph, and the alternating sum of its
 oriented chambers gives an apartment cycle. The scripts check that the span of
 these apartment cycles has the expected Steinberg dimension.
+
+Scalar matrices act trivially on the building, so this geometric action factors
+through `PGL_3(F_q)`.
 
 ## Notes
 

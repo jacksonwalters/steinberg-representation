@@ -4,6 +4,8 @@ from sage.all import *
 
 
 q = 3
+VERBOSE = False
+
 F = GF(q)
 V = VectorSpace(F, 3)
 G = GL(3, F)
@@ -64,7 +66,7 @@ print(f"Computing the Steinberg representation of GL_3(F_{q})")
 print(f"|GL(3,{q})|:", G.order())
 
 # The vertices of the rank-2 building are the proper nonzero subspaces
-# of F_3^3, hence the projective points and projective lines.
+# of F_q^3, hence the projective points and projective lines.
 points = list(V.subspaces(1))
 planes = list(V.subspaces(2))
 
@@ -95,8 +97,9 @@ print("dimension of ker(partial):", ker.dimension())
 print("expected Steinberg dimension q^3:", q**3)
 assert ker.dimension() == q**3
 
-print("first Steinberg basis vector:")
-print(steinberg_basis[0])
+if VERBOSE:
+    print("first Steinberg basis vector:")
+    print(steinberg_basis[0])
 
 
 def apartment_cycle_from_columns(columns):
@@ -207,7 +210,8 @@ for apartment in unique_apartments:
 
 orbit_sizes = sorted(len(orbit) for orbit in orbits)
 print("number of Weyl-group orbits on apartments:", len(orbits))
-print("Weyl-group orbit sizes:", orbit_sizes)
+if VERBOSE:
+    print("Weyl-group orbit sizes:", orbit_sizes)
 
 
 def fixed_counts(M):
@@ -251,14 +255,16 @@ for C in G.conjugacy_classes():
 
 rows.sort(key=lambda row: (row["order"], row["size"], row["trace"]))
 
-for row in rows:
-    print(
-        f"order {row['order']:2}, size {row['size']:4} : "
-        f"fixed vertices = {row['fixed_vertices']:2}, "
-        f"fixed edges = {row['fixed_edges']:2}, "
-        f"chi = {row['trace']:3}"
-    )
+if VERBOSE:
+    for row in rows:
+        print(
+            f"order {row['order']:2}, size {row['size']:4} : "
+            f"fixed vertices = {row['fixed_vertices']:2}, "
+            f"fixed edges = {row['fixed_edges']:2}, "
+            f"chi = {row['trace']:3}"
+        )
 
 inner = sum(ZZ(row["size"]) * ZZ(row["trace"]) ** 2 for row in rows) / ZZ(G.order())
+print("Number of conjugacy classes:", len(rows))
 print("Inner product of Steinberg character with itself:", inner)
 assert inner == 1
