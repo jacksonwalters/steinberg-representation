@@ -49,6 +49,13 @@ general this rank-2 construction gives `dim St = q^3`.
   representation families of `GL_2(F_q)`, constructs determinant twists of
   Steinberg, and constructs principal series by explicit induction from the
   Borel subgroup.
+- `gl_2_q/whittaker_basis_gl_2_q.py` changes the cuspidal projector model into
+  a Whittaker basis indexed by `F_q^*`, giving compact `(q - 1) x (q - 1)`
+  cuspidal matrices while retaining the Gelfand-Graev construction as a
+  correctness oracle.
+- `gl_2_q/direct_whittaker_cuspidal_gl_2_q.py` constructs the same cuspidal
+  Whittaker model directly from the nonsplit-torus character formula and Bruhat
+  decomposition, avoiding the large Gelfand-Graev projector space.
 
 ## What the scripts do
 
@@ -106,6 +113,8 @@ sage gl_2_q/representations_gl_2_q.py 5 --all-principal-series
 sage gl_2_q/representations_gl_2_q.py 4 --cuspidal-parameters
 sage gl_2_q/representations_gl_2_q.py 5 --cuspidal 1
 sage gl_2_q/representations_gl_2_q.py 3 --all-cuspidals
+sage gl_2_q/whittaker_basis_gl_2_q.py 5 --cuspidal 1 --generators
+sage gl_2_q/direct_whittaker_cuspidal_gl_2_q.py 7 --cuspidal 1 --generators
 ```
 
 ## `GL_2(F_q)` scripts
@@ -161,6 +170,42 @@ The image of `e_theta` has dimension `q - 1`; restricting `Gamma(g)` to this
 image gives explicit cuspidal matrices. This exact projector method is useful
 for small `q`, but it uses a Gelfand-Graev space of dimension `|GL_2(F_q)|/q`,
 so larger values of `q` become slower than the principal-series construction.
+
+The Whittaker-basis script keeps this projector model as a source of truth and
+then decomposes the cuspidal image under the upper-unipotent subgroup. For each
+`y in F_q^*`, it applies the Fourier idempotent
+
+```text
+P_y = (1/q) sum_x psi(-yx) pi(n(x)),
+```
+
+where `n(x) = [[1, x], [0, 1]]`. Each image is one-dimensional, and these lines
+form a basis in which
+
+```text
+pi(n(x)) e_y = psi(yx) e_y.
+```
+
+This gives a genuine Whittaker/Kirillov-style basis indexed by `F_q^*`, while
+still checking the resulting traces against the nonsplit-torus cuspidal
+character formula.
+
+The direct Whittaker script avoids constructing `Gamma`. It uses the explicit
+Borel action on basis vectors `e_y`, together with Bruhat decomposition
+
+```text
+g = n(a/c) diag(-det(g)/c, -c) w n(d/c)        if c != 0,
+```
+
+for `g = [[a, b], [c, d]]`. The Weyl matrix for
+`w = [[0, 1], [-1, 0]]` is recovered by Fourier inversion from the identity
+
+```text
+tr(pi(diag(a, 1) w n(s))) = sum_y W[a*y, y] psi(y*s).
+```
+
+Those traces are supplied by the nonsplit-torus cuspidal character formula, so
+the construction stays in dimension `q - 1` throughout.
 
 ## Fano-plane representations for `GL_3(F_2)`
 
