@@ -41,6 +41,27 @@ general this rank-2 construction gives `dim St = q^3`.
   reduced point/line, boundary-image, and Steinberg representations as explicit
   matrices, and records the two complex 3-dimensional irreducible characters
   over `Q(zeta_7)`.
+- `gl_3_q/representation_utils_gl_3_q.py` contains shared `GL_3(F_q)`
+  helpers: family counts, multiplicative characters, geometric cosets for
+  `B\G` and `P_{2,1}\G`, and a vector-valued induction engine.
+- `gl_3_q/representations_gl_3_q.py` prints the full `GL_3(F_q)` family table
+  and points to the modular construction scripts.
+- `gl_3_q/unipotent_representations_gl_3_q.py` constructs determinant
+  characters, the middle unipotent representation from the projective-plane
+  augmentation module, and Steinberg twists.
+- `gl_3_q/principal_series_gl_3_q.py` constructs the irreducible principal
+  series attached to three distinct split-torus characters.
+- `gl_3_q/repeated_split_representations_gl_3_q.py` constructs the two
+  irreducible constituents attached to a split character triple
+  `(chi, chi, mu)`: the small parabolic induction and the large constituent
+  built from the `GL_2(F_q)` Steinberg module.
+- `gl_3_q/intermediate_series_gl_3_q.py` constructs the intermediate series
+  induced from a `GL_2(F_q)` cuspidal representation, reusing the direct
+  Whittaker model in `gl_2_q/direct_whittaker_cuspidal_gl_2_q.py`.
+- `gl_3_q/cuspidal_parameters_gl_3_q.py` organizes the genuine `GL_3(F_q)`
+  cuspidal parameters from regular characters of the cubic nonsplit torus
+  `F_{q^3}^*`. This module records parameters and degree counts; explicit
+  matrices for these cuspidals are intentionally left for a later construction.
 - `gl_2_q/projective_line.py` contains reusable `P^1(F_q)` geometry and
   projective-line action helpers for `GL_2(F_q)`.
 - `gl_2_q/steinberg_representation_gl_2_q.py` constructs the `GL_2(F_q)`
@@ -88,6 +109,12 @@ sage gl_3_q/steinberg_representation_gl_3_2.py
 sage gl_3_q/steinberg_representation_gl_3_3.py
 sage gl_3_q/steinberg_representation_gl_3_q.py 3
 sage gl_3_q/fano_plane_representations_gl_3_2.py
+sage gl_3_q/representations_gl_3_q.py 3 --scripts
+sage gl_3_q/unipotent_representations_gl_3_q.py 3
+sage gl_3_q/repeated_split_representations_gl_3_q.py 3
+sage gl_3_q/intermediate_series_gl_3_q.py 3
+sage gl_3_q/principal_series_gl_3_q.py 4 --character yes
+sage gl_3_q/cuspidal_parameters_gl_3_q.py 3 --parameters
 sage gl_2_q/steinberg_representation_gl_2_q.py 5
 sage gl_2_q/representations_gl_2_q.py 5
 ```
@@ -108,6 +135,11 @@ sage gl_3_q/steinberg_representation_gl_3_q.py 3 --weyl-orbits
 sage gl_3_q/fano_plane_representations_gl_3_2.py --character-table
 sage gl_3_q/fano_plane_representations_gl_3_2.py --incidence
 sage gl_3_q/fano_plane_representations_gl_3_2.py --generators
+sage gl_3_q/unipotent_representations_gl_3_q.py 3 --character-table
+sage gl_3_q/principal_series_gl_3_q.py 4 --characters 0 1 2 --generators
+sage gl_3_q/repeated_split_representations_gl_3_q.py 3 --repeated 0 --single 1
+sage gl_3_q/intermediate_series_gl_3_q.py 3 --cuspidal 1 --character-twist 0
+sage gl_3_q/cuspidal_parameters_gl_3_q.py 4 --character 1
 sage gl_2_q/steinberg_representation_gl_2_q.py 5 --character-table
 sage gl_2_q/representations_gl_2_q.py 5 --all-principal-series
 sage gl_2_q/representations_gl_2_q.py 4 --cuspidal-parameters
